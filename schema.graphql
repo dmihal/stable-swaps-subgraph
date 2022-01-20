@@ -1,6 +1,18 @@
-type ExampleEntity @entity {
+type Protocol @entity {
   id: ID!
-  count: BigInt!
-  fee: Int! # uint24
-  tickSpacing: Int! # int24
+  totalVolume: BigDecimal!
+}
+
+type Pool @entity {
+  id: ID!
+  totalVolume: BigDecimal!
+  protocol: String!
+  asset0: Bytes!
+  asset1: Bytes!
+}
+
+type Asset @entity {
+  id: ID!
+  totalVolume: BigDecimal!
+  decimals: Int!
 }

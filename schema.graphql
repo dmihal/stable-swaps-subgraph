@@ -7,8 +7,7 @@ type Pool @entity {
   id: ID!
   totalVolume: BigDecimal!
   protocol: String!
-  asset0: Bytes!
-  asset1: Bytes!
+  assets: [Bytes!]!
 }
 
 type Asset @entity {

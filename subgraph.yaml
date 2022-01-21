@@ -28,6 +28,30 @@ dataSources:
         - event: PoolCreated(indexed address,indexed address,indexed uint24,int24,address)
           handler: handlePoolCreated
       file: ./src/mapping.ts
+  # Main registry contract used to locate pools and query information about them as well as registered coins
+  - name: CurveRegistry
+    kind: ethereum/contract
+    network: mainnet
+    source:
+      abi: CurveRegistry
+      address: '0x90e00ace148ca3b23ac1bc8c240c2a7dd9c2d7f5'
+      startBlock: 12195750
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      file: ./src/curve-registry.ts
+      entities: [ ]
+      abis:
+        - name: ERC20
+          file: ./abis/ERC20.json
+        - name: CurveRegistry
+          file: ./abis/CurveRegistry.json
+        - name: StableSwap
+          file: ./abis/StableSwap.json
+      eventHandlers:
+        - event: PoolAdded(indexed address,bytes)
+          handler: handlePoolAdded
 
 templates:
   - kind: ethereum
@@ -50,3 +74,26 @@ templates:
         - event: Swap(indexed address,indexed address,int256,int256,uint160,uint128,int24)
           handler: handleSwap
       file: ./src/mapping.ts
+
+  # Main pool contract
+  - name: CurvePool
+    kind: ethereum/contract
+    network: mainnet
+    source:
+      abi: StableSwap
+    mapping: &pool_mapping
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      file: ./src/curve-pool.ts
+      entities: [ ]
+      abis:
+        - name: StableSwap
+          file: ./abis/StableSwap.json
+        - name: CurveRegistry
+          file: ./abis/CurveRegistry.json
+      eventHandlers:
+        - event: TokenExchange(indexed address,int128,uint256,int128,uint256)
+          handler: handleTokenExchange
+        - event: TokenExchangeUnderlying(indexed address,int128,uint256,int128,uint256)
+          handler: handleTokenExchangeUnderlying

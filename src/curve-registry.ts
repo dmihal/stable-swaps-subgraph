@@ -43,11 +43,12 @@ export function handlePoolAdded(event: PoolAdded): void {
   
     let assets: Address[] = new Array<Address>(8)
     let numAssets = 0
-
+    let underlying = true
 
     for (let i = 0; i < 4; i += 1) {
       let result = poolContract.try_underlying_coins(BigInt.fromI32(i))
       if (result.reverted) {
+        underlying = false
         result = poolContract.try_coins(BigInt.fromI32(i))
       }
       if (result.reverted) {
@@ -68,15 +69,15 @@ export function handlePoolAdded(event: PoolAdded): void {
 
     // let assets = underlyingCoins === null ? coins! : underlyingCoins
 
-    // if (!assetTypes.has(assets[0].toHex())) {
-    //   return
-    // }
+    if (!assetTypes.has(assets[0].toHex())) {
+      return
+    }
     // if (!isMeta) {
-      // for (let i = 1; i < assets.length; i += 1) {
-      //   if (!assetTypes.has(assets[i].toHex())) {
-      //     return
-      //   }
-      // }
+      for (let i = 1; i < numAssets; i += 1) {
+        if (!assetTypes.has(assets[i].toHex())) {
+          return
+        }
+      }
     // }
 
     let assetsBytes: Bytes[] = new Array<Bytes>(numAssets)
@@ -90,10 +91,10 @@ export function handlePoolAdded(event: PoolAdded): void {
     pool.save()
 
     // Start indexing events from new pool
-    // let context = new DataSourceContext()
-    // context.setBytes('registry', registryContract._address)
-    // context.setBoolean('underlying', underlyingCoins != null)
+    let context = new DataSourceContext()
+    context.setBytes('registry', registryContract._address)
+    context.setBoolean('underlying', underlying)
 
-    // CurvePool.createWithContext(address, context)
+    CurvePool.createWithContext(address, context)
   }
 }

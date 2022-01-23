@@ -5,7 +5,7 @@ import { StableSwap } from '../generated/CurveRegistry/StableSwap'
 import { CurvePool } from '../generated/templates'
 
 import { Protocol, Pool } from '../generated/schema'
-import { assetTypes, ensureAsset } from './asset'
+import { assetTypes, ensureAsset, getMatchingAssets } from './asset'
 
 function getOrNull<T>(result: ethereum.CallResult<T>): T | null {
   return result.reverted ? null : result.value
@@ -72,18 +72,21 @@ export function handlePoolAdded(event: PoolAdded): void {
     if (!assetTypes.has(assets[0].toHex())) {
       return
     }
-    // if (!isMeta) {
-      for (let i = 1; i < numAssets; i += 1) {
-        if (!assetTypes.has(assets[i].toHex())) {
-          return
-        }
+    let type: string | null
+    if (isMeta) {
+      return
+      // type = assetTypes.get(assets[0].toHex())
+    } else {
+      type = getMatchingAssets(assets.slice(0, numAssets))
+      if (type == null) {
+        return
       }
-    // }
+    }
 
     let assetsBytes: Bytes[] = new Array<Bytes>(numAssets)
 
     for (let i = 0; i < numAssets; i += 1) {
-      ensureAsset(assets[i])
+      ensureAsset(assets[i], 'curve')
       assetsBytes[i] = assets[i]
     }
     pool.assets = assetsBytes

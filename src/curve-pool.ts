@@ -1,7 +1,7 @@
 import { BigInt, dataSource, ethereum } from '@graphprotocol/graph-ts'
 import { TokenExchange, TokenExchangeUnderlying } from '../generated/templates/CurvePool/StableSwap'
 import { toDecimal } from './utils'
-import { Asset, Protocol, Pool } from '../generated/schema'
+import { Asset, Protocol, Pool, ProtocolAsset } from '../generated/schema'
 
 export function handleTokenExchange(event: TokenExchange): void {
   let context = dataSource.context()
@@ -21,11 +21,14 @@ export function handleTokenExchange(event: TokenExchange): void {
     let tokenBought = Asset.load(pool.assets[event.params.bought_id.toI32()].toHex())!
     let amountBought = toDecimal(event.params.tokens_bought, tokenBought.decimals)
 
+    let protocolAsset = ProtocolAsset.load(pool.protocol + '-' + tokenSold.assetType)!
+
     // Save trade volume
     let volume = amountSold.plus(amountBought).div(BigInt.fromI32(2).toBigDecimal())
 
     pool.totalVolume += volume
     protocol.totalVolume += volume
+    protocolAsset.totalVolume += volume
 
     tokenSold.totalVolume += amountSold
     tokenBought.totalVolume += amountBought
@@ -35,6 +38,7 @@ export function handleTokenExchange(event: TokenExchange): void {
 
     pool.save()
     protocol.save()
+    protocolAsset.save()
   }
 }
 
@@ -51,11 +55,14 @@ export function handleTokenExchangeUnderlying(event: TokenExchangeUnderlying): v
     let tokenBought = Asset.load(pool.assets[event.params.bought_id.toI32()].toHex())!
     let amountBought = toDecimal(event.params.tokens_bought, tokenBought.decimals)
 
+    let protocolAsset = ProtocolAsset.load(pool.protocol + '-' + tokenSold.assetType)!
+
     // Save trade volume
     let volume = amountSold.plus(amountBought).div(BigInt.fromI32(2).toBigDecimal())
 
     pool.totalVolume += volume
     protocol.totalVolume += volume
+    protocolAsset.totalVolume += volume
 
     tokenSold.totalVolume += amountSold
     tokenBought.totalVolume += amountBought
@@ -65,6 +72,7 @@ export function handleTokenExchangeUnderlying(event: TokenExchangeUnderlying): v
 
     pool.save()
     protocol.save()
+    protocolAsset.save()
   }
 }
 

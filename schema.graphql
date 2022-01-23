@@ -1,6 +1,13 @@
 type Protocol @entity {
   id: ID!
   totalVolume: BigDecimal!
+  assets: ProtocolAsset! @derivedFrom(field: "protocol")
+}
+
+type ProtocolAsset @entity {
+  id: ID!
+  protocol: Protocol!
+  totalVolume: BigDecimal!
 }
 
 type Pool @entity {
@@ -8,10 +15,12 @@ type Pool @entity {
   totalVolume: BigDecimal!
   protocol: String!
   assets: [Bytes!]!
+  assetType: String!
 }
 
 type Asset @entity {
   id: ID!
   totalVolume: BigDecimal!
   decimals: Int!
+  assetType: String!
 }

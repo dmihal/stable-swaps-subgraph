@@ -1,6 +1,6 @@
 import { Address, BigInt } from "@graphprotocol/graph-ts"
 import { ERC20 } from "../generated/UniswapV3Factory/ERC20"
-import { Asset } from "../generated/schema"
+import { Asset, ProtocolAsset } from "../generated/schema"
 
 let ethAddress = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
 
@@ -12,7 +12,23 @@ assetTypes.set("0x5f98805A4E8be255a32880FDeC7F6728C6568bA0", 'usd') // LUSD
 assetTypes.set("0x99d8a9c45b2eca8864373a26d1459e3dff1e17f3", 'usd') // MIM
 assetTypes.set("0xa47c8bf37f92abed4a126bda807a7b7498661acd", 'usd') // UST
 
-export function ensureAsset(address: Address): void {
+export function getMatchingAssets(assets: Address[]): string | null {
+  let assetType: string | null = null
+  for (let i = 0; i < assets.length; i += 1) {
+    if (!assetTypes.has(assets[i].toHex())) {
+      return null
+    }
+    let type = assetTypes.get(assets[i].toHex())
+    if (assetType == null) {
+      assetType = type
+    } else if (assetType != type) {
+      return null
+    }
+  }
+  return assetType
+}
+
+export function ensureAsset(address: Address, protocol: string): void {
   let asset = Asset.load(address.toHex())
 
   if (!asset) {
@@ -21,6 +37,15 @@ export function ensureAsset(address: Address): void {
     asset = new Asset(address.toHex())
     asset.decimals = address.toHex() == ethAddress ? 18 : contract.decimals()
     asset.totalVolume = BigInt.fromI32(0).toBigDecimal()
+    asset.assetType = assetTypes.get(address.toHex())
     asset.save()
+  }
+
+  let protocolAsset = ProtocolAsset.load(protocol + '-' + asset.assetType)
+  if (!protocolAsset) {
+    protocolAsset = new ProtocolAsset(protocol + '-' + asset.assetType)
+    protocolAsset.protocol = protocol
+    protocolAsset.totalVolume = BigInt.fromI32(0).toBigDecimal()
+    protocolAsset.save()
   }
 }

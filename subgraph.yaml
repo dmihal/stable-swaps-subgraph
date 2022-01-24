@@ -27,7 +27,33 @@ dataSources:
       eventHandlers:
         - event: PoolCreated(indexed address,indexed address,indexed uint24,int24,address)
           handler: handlePoolCreated
-      file: ./src/mapping.ts
+      file: ./src/uni-v3.ts
+  - kind: ethereum
+    name: UniswapV2Factory
+    network: mainnet
+    source:
+      address: "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f"
+      abi: UniswapV2Factory
+      startBlock: 10000835
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - Protocol
+        - Pool
+        - Asset
+      abis:
+        - name: UniswapV2Factory
+          file: ./abis/UniswapV2Factory.json
+        - name: UniswapV2Pool
+          file: ./abis/UniswapV2Pool.json
+        - name: ERC20
+          file: ./abis/ERC20.json
+      eventHandlers:
+        - event: PairCreated(indexed address,indexed address,address,uint256)
+          handler: handlePoolCreated
+      file: ./src/uni-v2.ts
   # Main registry contract used to locate pools and query information about them as well as registered coins
   - name: CurveRegistry
     kind: ethereum/contract
@@ -73,7 +99,28 @@ templates:
       eventHandlers:
         - event: Swap(indexed address,indexed address,int256,int256,uint160,uint128,int24)
           handler: handleSwap
-      file: ./src/mapping.ts
+      file: ./src/uni-v3.ts
+
+  - kind: ethereum
+    name: UniswapV2Pool
+    network: mainnet
+    source:
+      abi: UniswapV2Pool
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - Protocol
+        - Pool
+        - Asset
+      abis:
+        - name: UniswapV2Pool
+          file: ./abis/UniswapV2Pool.json
+      eventHandlers:
+        - event: Swap(indexed address,uint256,uint256,uint256,uint256,indexed address)
+          handler: handleSwap
+      file: ./src/uni-v2.ts
 
   # Main pool contract
   - name: CurvePool

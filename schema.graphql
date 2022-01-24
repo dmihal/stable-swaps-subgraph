@@ -1,18 +1,20 @@
 type Protocol @entity {
   id: ID!
-  totalVolume: BigDecimal!
-  assets: ProtocolAsset! @derivedFrom(field: "protocol")
+  totalVolumeUSD: BigDecimal!
+  assets: [ProtocolAsset!]! @derivedFrom(field: "protocol")
 }
 
 type ProtocolAsset @entity {
   id: ID!
   protocol: Protocol!
   totalVolume: BigDecimal!
+  totalVolumeUSD: BigDecimal!
 }
 
 type Pool @entity {
   id: ID!
   totalVolume: BigDecimal!
+  totalVolumeUSD: BigDecimal!
   protocol: String!
   assets: [Bytes!]!
   assetType: String!
@@ -21,6 +23,12 @@ type Pool @entity {
 type Asset @entity {
   id: ID!
   totalVolume: BigDecimal!
+  totalVolumeUSD: BigDecimal!
   decimals: Int!
   assetType: String!
+}
+
+type AssetPrice @entity {
+  id: ID!
+  price: BigDecimal!
 }

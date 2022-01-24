@@ -2,7 +2,7 @@ import { BigInt } from "@graphprotocol/graph-ts"
 import { PoolCreated } from "../generated/UniswapV3Factory/UniswapV3Factory"
 import { UniswapV3Pool as UniswapV3PoolContract, Swap } from "../generated/UniswapV3Factory/UniswapV3Pool"
 import { UniswapV3Pool } from "../generated/templates"
-import { Protocol, Pool, Asset, ProtocolAsset } from "../generated/schema"
+import { Protocol, Pool, Asset, ProtocolAsset, AssetPrice } from "../generated/schema"
 import { ensureAsset, getMatchingAssets } from "./asset"
 import { toDecimal } from "./utils"
 
@@ -24,7 +24,7 @@ export function handlePoolCreated(event: PoolCreated): void {
     let protocol = Protocol.load('uniswap-v3')
     if (!protocol) {
       protocol = new Protocol('uniswap-v3')
-      protocol.totalVolume = BigInt.fromI32(0).toBigDecimal()
+      protocol.totalVolumeUSD = BigInt.fromI32(0).toBigDecimal()
       protocol.save()
     }
 
@@ -36,18 +36,24 @@ export function handleSwap(event: Swap): void {
   let pool = Pool.load(event.address.toHex())!
   let token0 = Asset.load(pool.assets[0].toHex())!
   let token1 = Asset.load(pool.assets[1].toHex())!
+  let assetPrice = AssetPrice.load(token0.assetType)!
   let protocol = Protocol.load(pool.protocol)!
   let protocolAsset = ProtocolAsset.load(pool.protocol + '-' + token0.assetType)!
 
   let zeroForOne = event.params.amount0 > event.params.amount1
   let volumeWei = zeroForOne ? event.params.amount0 : event.params.amount1
   let volumeDecimal = toDecimal(volumeWei, zeroForOne ? token0.decimals : token1.decimals)
+  let volumeUSD = volumeDecimal * assetPrice.price
 
   pool.totalVolume += volumeDecimal
+  pool.totalVolumeUSD += volumeUSD
   token0.totalVolume += volumeDecimal
+  token0.totalVolumeUSD += volumeUSD
   token1.totalVolume += volumeDecimal
-  protocol.totalVolume += volumeDecimal
+  token1.totalVolumeUSD += volumeUSD
+  protocol.totalVolumeUSD += volumeUSD
   protocolAsset.totalVolume += volumeDecimal
+  protocolAsset.totalVolumeUSD += volumeUSD
 
   pool.save()
   token0.save()

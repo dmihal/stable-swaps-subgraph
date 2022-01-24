@@ -19,7 +19,7 @@ export function handlePoolAdded(event: PoolAdded): void {
     let protocol = Protocol.load('curve')
     if (!protocol) {
       protocol = new Protocol('curve')
-      protocol.totalVolume = BigInt.fromI32(0).toBigDecimal()
+      protocol.totalVolumeUSD = BigInt.fromI32(0).toBigDecimal()
       protocol.save()
     }
 

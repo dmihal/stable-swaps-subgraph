@@ -65,6 +65,9 @@ export function handleSwap(event: Swap): void {
     let amount1 = zeroForOne ? event.params.amount1Out : event.params.amount1In
     let usdcAmount = usdcIsZero ? toDecimal(amount0, 6) : toDecimal(amount1, 6)
     let otherAmount = usdcIsZero ? toDecimal(amount1, decimals) : toDecimal(amount0, decimals)
+    if (otherAmount == BigInt.fromI32(0).toBigDecimal()) {
+      return
+    }
     let price = usdcAmount.div(otherAmount)
 
     log.error(assetType, [])
